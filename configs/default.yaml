@@ -1,0 +1,36 @@
+image_size: 224
+in_channels: 3
+patch_size: 8
+stride: 8
+embed_dim: 96
+depths: [2, 2, 6, 2]
+num_heads: [3, 6, 12, 24]
+window_size: 7
+mlp_ratio: 4.0
+dropout: 0.0
+drop_path: 0.1
+decoder_channels: [384, 256, 192, 128]
+dense_feature_dim: 128
+predictor_hidden_dim: 256
+predictor_depth: 2
+use_absolute_positional_embedding: false
+use_relative_position_bias: true
+mask_ratio: 0.6
+mask_block_size: [4, 4]
+mask_seed: 42
+ema_decay: 0.996
+prediction_loss_type: mse
+feature_normalization: l2
+optimizer: adamw
+learning_rate: 0.0001
+weight_decay: 0.05
+batch_size: 8
+num_epochs: 100
+scheduler: cosine
+warmup: 10
+checkpoint_dir: checkpoints/default
+use_amp: true
+sigreg_weight: 0.05
+sigreg_target: dense
+flat_channel_threshold: 0.0001
+feature_stat_logging_frequency: 50

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "msjepa"
+version = "0.1.0"
+description = "Self-supervised dense representation learning on images with masked latent prediction (no pixel reconstruction)"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0",
+    "numpy",
+    "Pillow",
+    "PyYAML",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[project.scripts]
+msjepa-train = "msjepa.train:main"
+msjepa-validate = "msjepa.validate:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["msjepa*"]
