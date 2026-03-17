@@ -10,13 +10,26 @@ def initialize_teacher_from_student(student: nn.Module, teacher: nn.Module) -> N
         parameter.requires_grad_(False)
 
 
+def _student_key(student_dict: dict[str, torch.Tensor], name: str) -> str | None:
+    """Resolve teacher param/buffer name to student key (handles DDP 'module.' prefix)."""
+    if name in student_dict:
+        return name
+    ddp_name = f"module.{name}"
+    if ddp_name in student_dict:
+        return ddp_name
+    return None
+
+
 @torch.no_grad()
 def update_ema(student: nn.Module, teacher: nn.Module, decay: float) -> None:
     student_params = dict(student.named_parameters())
     for name, teacher_param in teacher.named_parameters():
-        teacher_param.mul_(decay).add_(student_params[name].detach(), alpha=1.0 - decay)
+        key = _student_key(student_params, name)
+        if key is not None:
+            teacher_param.mul_(decay).add_(student_params[key].detach(), alpha=1.0 - decay)
 
     student_buffers = dict(student.named_buffers())
     for name, teacher_buffer in teacher.named_buffers():
-        if name in student_buffers:
-            teacher_buffer.copy_(student_buffers[name])
+        key = _student_key(student_buffers, name)
+        if key is not None:
+            teacher_buffer.copy_(student_buffers[key])
