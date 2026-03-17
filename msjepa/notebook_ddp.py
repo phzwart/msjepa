@@ -130,6 +130,7 @@ def _run_ddp_training_loop(
     ckpt_dir = Path(checkpoint_dir)
     if rank == 0:
         ckpt_dir.mkdir(parents=True, exist_ok=True)
+        print(f"DDP training started, {num_epochs} epochs", flush=True)
 
     for epoch in range(num_epochs):
         train_sampler.set_epoch(epoch)
@@ -205,7 +206,7 @@ def _run_ddp_training_loop(
         val_metrics = {k: val_totals[k] / n_val_global for k in ("prediction_loss", "sigreg_loss", "total_loss", "agreement")}
 
         if rank == 0:
-            print(f"epoch {epoch + 1}/{num_epochs}  train loss {train_metrics['total_loss']:.4f}  val loss {val_metrics['total_loss']:.4f}  val agreement {val_metrics['agreement']:.4f}  lr {optimizer.param_groups[0]['lr']:.2e}")
+            print(f"epoch {epoch + 1}/{num_epochs}  train loss {train_metrics['total_loss']:.4f}  val loss {val_metrics['total_loss']:.4f}  val agreement {val_metrics['agreement']:.4f}  lr {optimizer.param_groups[0]['lr']:.2e}", flush=True)
             ckpt_path = ckpt_dir / f"epoch_{epoch + 1}.pt"
             state = model.state_dict()
             if hasattr(model.student, "module"):
@@ -219,7 +220,7 @@ def _run_ddp_training_loop(
                 "train_metrics": train_metrics,
                 "val_metrics": val_metrics,
             }, ckpt_path)
-            print(f"  saved {ckpt_path}")
+            print(f"  saved {ckpt_path}", flush=True)
 
     dist.destroy_process_group()
 
