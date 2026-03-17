@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import os
 from pathlib import Path
 
 import torch
@@ -223,6 +224,15 @@ def _run_ddp_training_loop(
     dist.destroy_process_group()
 
 
+def _set_dist_env(rank: int, world_size: int, master_addr: str = "127.0.0.1", master_port: int = 29500) -> None:
+    """Set env vars required for env:// rendezvous when using multiprocessing.spawn (e.g. from a notebook)."""
+    os.environ["MASTER_ADDR"] = os.environ.get("MASTER_ADDR", master_addr)
+    os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", str(master_port))
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world_size)
+    os.environ["LOCAL_RANK"] = str(rank)
+
+
 def run_ddp_worker_folders(
     rank: int,
     world_size: int,
@@ -233,6 +243,7 @@ def run_ddp_worker_folders(
     checkpoint_dir: str | Path,
 ) -> None:
     """DDP worker with folder-based data. Used by spawn; must live in an importable module."""
+    _set_dist_env(rank, world_size)
     dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
     device = torch.device("cuda", rank)
@@ -290,6 +301,7 @@ def run_ddp_worker_pt(
     checkpoint_dir: str | Path,
 ) -> None:
     """DDP worker with data from .pt file(s). Used by spawn; must live in an importable module."""
+    _set_dist_env(rank, world_size)
     dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
     device = torch.device("cuda", rank)
