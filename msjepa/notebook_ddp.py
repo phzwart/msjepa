@@ -250,7 +250,11 @@ def run_ddp_worker_folders(
 
     config = MSJEPAConfig.from_dict(config_dict)
     model = MSJEPA(config)
-    model.student = DDP(model.student.to(device), device_ids=[rank])
+    model.student = DDP(
+        model.student.to(device),
+        device_ids=[rank],
+        find_unused_parameters=True,  # e.g. density head when density_prediction_weight=0
+    )
     model.teacher = model.teacher.to(device)
 
     train_dataset = FolderImageDataset(
@@ -308,7 +312,11 @@ def run_ddp_worker_pt(
 
     config = MSJEPAConfig.from_dict(config_dict)
     model = MSJEPA(config)
-    model.student = DDP(model.student.to(device), device_ids=[rank])
+    model.student = DDP(
+        model.student.to(device),
+        device_ids=[rank],
+        find_unused_parameters=True,  # e.g. density head when density_prediction_weight=0
+    )
     model.teacher = model.teacher.to(device)
 
     train_t, val_t = load_pt_train_val(data_pt_path, val_pt_path=val_pt_path, val_fraction=val_fraction)
